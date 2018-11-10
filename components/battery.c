@@ -30,15 +30,27 @@
 	battery_perc(const char *bat)
 	{
 		int perc;
-		char path[PATH_MAX];
+        float charge_now;
+        float charge_full;
+		char path1[PATH_MAX];
+		char path2[PATH_MAX];
 
-		if (esnprintf(path, sizeof(path),
-		              "/sys/class/power_supply/%s/capacity", bat) < 0) {
+		if (esnprintf(path1, sizeof(path1),
+		              "/sys/class/power_supply/%s/charge_now", bat) < 0) {
 			return NULL;
 		}
-		if (pscanf(path, "%d", &perc) != 1) {
+		if (esnprintf(path2, sizeof(path2),
+		              "/sys/class/power_supply/%s/charge_full", bat) < 0) {
 			return NULL;
 		}
+		if (pscanf(path1, "%f", &charge_now) != 1) {
+			return NULL;
+		}
+		if (pscanf(path2, "%f", &charge_full) != 1) {
+			return NULL;
+		}
+
+        perc = (int) 100*charge_now/charge_full;
 
 		return bprintf("%d", perc);
 	}
